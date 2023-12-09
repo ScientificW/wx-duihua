@@ -106,20 +106,8 @@
         <div class="tab-pane fade in active" id="w1">
             <div class="setting">
             <p>
-                <span>聊天模式：</span>
-                <select class="slt-common" data-class="i-n-user">
-                <option value="">单聊</option>
-                <option value="i-n-user-group">群聊</option>
-                </select>
-            </p>
-            <p>
                 <span>聊天标题：</span>
                 <input type="text" value="微信对话制作" data-class="i-n-name span" class="input-common" /> 群聊模式(括号)里是群聊人数
-            </p>
-            <p>
-                <span>消息数目：</span>
-                <input type="text" value="" class="input-i-n-count" />
-                <a class="btn-del-i-n-count" href="#">删除数目</a>
             </p>
             <p>
                 <span>显示用户昵称：</span>
@@ -139,7 +127,6 @@
                 <span>底部输入框：</span>
                 <select class="slt-common" data-class="i-bottom">
                 <option value="">文本模式</option>
-                <option value="i-bottom2">语音模式</option>
                 </select>
             </p>
             <div style="overflow:hidden;margin:20px 0 40px 0;">
@@ -361,4 +348,237 @@
         </div>
       </div>
     </div>
+    <script>
+      set_water();
+      setInterval(function () {
+        set_water();
+      }, 2000);
+      //消息数目
+      var i_n_count = randomString(1);
+      if (i_n_count > 0) {
+        $('.input-i-n-count').val(i_n_count);
+        $('.i-n-count').text(i_n_count);
+      }
+      $('.input-i-n-count').bind('input propertychange', function () {
+        var val = $(this).val();
+        if (isNaN(val) || val == 0) {
+          $('.i-n-count').text('');
+          return false;
+        }
+        val = $(this).val();
+        $('.i-n-count').text(val);
+      });
+      $('.btn-del-i-n-count').click(function () {
+        $('.i-n-count').text('');
+        $('.input-i-n-count').val('');
+        return false;
+      });
+
+      $('body').on('click', '.a-u-dialog a', function () {
+        var user = $(this).parents('.add-user');
+        var index = user.index();
+        var name = user.find('.a-u-name .a-u-data-name').val();
+        var content = user.find('.a-u-name textarea').val();
+        var img = $(this).parent().parent().find('.a-u-pic-show img').clone();
+        var type = user.find('.a-u-dialog-master a').hasClass('btn-success');
+
+        if (name == '') {
+          alert('请输入用户名！');
+          return false;
+        }
+
+        if (content == '') {
+          alert('请输入聊天内容！');
+          return false;
+        }
+
+        if (!img.length) {
+          img = '<img src="images/default-head.png" />';
+        }
+
+        content = replace_qq_emoji(content);
+
+        var msg_class = type ? 'i-b-sen-text' : 'i-b-rec-text';
+        var nick = type ? '' : '<p class="i-b-nick">' + name + '</p>';
+
+        var dialog = $('<div class="' + msg_class + '"><div>' + nick + '<span><i></i><em>' + content + '</em><a class="msg-del"></a></span></div></div>');
+        dialog.prepend(img);
+        $('.i-body').append(dialog);
+        //显示名称
+        $(".radio-i-b-nick:checked").click();
+        return false;
+      });
+
+      $('.add-time-btn').click(function () {
+        var year = $('.slt-year option:selected').val();
+        var month = $('.slt-month option:selected').val();
+        var day = $('.slt-day option:selected').val();
+        var xinqi = $('.slt-xinqi option:selected').val();
+        var shi = $('.slt-shi option:selected').val();
+        var hour = $('.slt-hour option:selected').val();
+        var minite = $('.slt-minite option:selected').val();
+        var str = '';
+        if (year != '-')
+          str += year + '年';
+        if (month != '-')
+          str += month + '月';
+        if (day != '-')
+          str += day + '日 ';
+        if (xinqi != '-')
+          str += xinqi + ' ';
+        if (shi != '-')
+          str += shi;
+        str += hour + ':';
+        str += minite;
+        var html = '<div class="i-b-time"><span>' + str + '</span><a class="msg-del"></a></div>';
+        $('.i-body').append(html);
+        return false;
+      });
+
+      var set_body_bg = function () {
+        var img = $('.a-u-pic-bodybg img');
+        var src = img.attr('src');
+        $('.i-body').css('background-image', 'url(' + src + ')');
+
+      }
+
+
+      $('body').on('change', '.a-u-pic-show input', function () {
+        var img = document.createElement('img');//创建 img 对象
+        var _this = $(this);
+        var callback = _this.attr('data-callback');
+
+        window.URL = window.URL || window.webkitURL;
+
+        var imgFile = $(this).get(0);
+
+        if (window.URL && imgFile.files[0]) {
+          var reader = new FileReader();
+          reader.readAsDataURL(imgFile.files[0]);
+          reader.onload = function (e) {
+            var img = '<img src="' + this.result + '" alt=""/>';
+            _this.parent().find('img').remove();
+            _this.parent().append(img);
+
+            if (callback) {
+              eval(callback + '()');
+            }
+          }
+        }
+      });
+      //主人切换
+      $('body').on('click', '.a-u-dialog-master a', function () {
+        var parent = $(this).parents('.users');
+        parent.find('.a-u-dialog-master a').removeClass('btn-success');
+        $(this).addClass('btn-success');
+        return false;
+      });
+
+      $('.body_bg_del').click(function () {
+        $('.i-body').css('background-image', 'none');
+        $('.a-u-pic-bodybg img').remove();
+        return false;
+      });
+
+      $('#add-user').click();
+
+      setTimeout(function () {
+        $('.btn-rand-face').click();
+        $('.btn-rand-username').click();
+
+        var _title = '';
+        $(".a-u-data-name").each(function () {
+          _title = $(this).val();
+        });
+
+        /*$('.input-common').val(_title);
+        $('.i-n-name span').text(_title);*/
+      }, 500);
+    </script>
+    <script>
+      function makePic(obj) {
+        var _this = obj;
+        var div = $('#iphone').clone();
+  
+        var my_image = $('.my-image');
+        var mask = $('.mask');
+        if (!my_image.length) {
+          my_image = $('<div class="my-image">成功生成图片，点击 <a class="my-image-view" target="_blank" href="#">这里</a> 查看，<a class="my-image-continue" href="#">继续制作</a></div>');
+          $('body').append(my_image);
+        }
+        if (!mask.length) {
+          $('body').append('<div class="mask"></div>');
+        }
+  
+        div.removeClass('iphone-preview');
+        div.css({
+          zoom: 1,
+          position: 'absolute',
+          left: 0,
+          top: 0
+        });
+        $('#ifm').contents().find('body').append(div);
+        _this.hide();
+        $('.loading').show();
+        $('.my-image').hide();
+        $('.mask').hide();
+  
+  
+        html2canvas(div, {
+          onrendered: function (canvas) {
+            var myImage = canvas.toDataURL("image/png");
+  
+            var pop_pic = $('.pop-pic');
+            var pop_class = 'pc';
+            if (browser.versions.mobile) {
+              pop_class = 'mobile';
+            }
+            pop_pic.find('.tips').addClass(pop_class);
+            pop_pic.find('img').attr('src', myImage);
+  
+            try {
+              pop_pic.show();
+            } catch (error) {
+  
+            }
+            $('#wrapper').hide();
+            $('.loading').hide();
+            _this.show();
+  
+  
+            div.remove();
+          }
+        });
+        return false;
+      }
+      $(function () {
+        $('.pop-pic .tips a').click(function () {
+          $('.pop-pic').hide();
+          $('#wrapper').show();
+        });
+  
+        $('#save').click(function () {
+          start_make($(this));
+        });
+  
+        /*背景选择ss*/
+        $(".btn-bgModal").click(function () {
+          var _arr = ['images/bg/12.jpeg', 'images/bg/13.jpeg', 'images/bg/11.jpeg', 'images/bg/10.jpeg', 'images/bg/9.jpeg', 'images/bg/8.jpeg', 'images/bg/7.jpeg', 'images/bg/6.jpeg', 'images/bg/5.jpeg', 'images/bg/4.jpeg', 'images/bg/2.jpeg', 'images/bg/3.jpeg', 'images/bg/1.png', 'images/bg/1.jpeg'];
+          var _html = '<ul>';
+          for (var i in _arr) {
+            _html += '<li><a href="javascript:void(0);"><img src="picture/56b76067c0444761b633389802e7c352.gif' + _arr[i] + '" ></a></li>';
+          }
+          _html += '</ul>';
+          //选择背景
+          _html = $(_html)
+          _html.find('img').click(function () {
+            var src = $(this).attr('src');
+            $('.a-u-pic-bodybg img').attr("src", src);
+            $('.i-body').css('background-image', 'url('images / 4f3daeac1d0d495191cbecdc3ca9b5b2.gif')');
+          });
+          $("#bglist").html(_html);
+        });
+  
+      });
+    </script>
 </body>
